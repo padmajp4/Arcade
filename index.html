@@ -14,12 +14,12 @@
 <meta property="og:url" content="https://arcade.padmajp.com/">
 <meta property="og:title" content="Arcade Vault — Free Retro Browser Games">
 <meta property="og:description" content="10 free retro arcade games in your browser. No download, no login. Play now.">
-<meta property="og:image" content="https://arcade.padmajp.com/Gemini_Generated_Image_l48d4ql48d4ql48d.webp">
+<meta property="og:image" content="https://arcade.padmajp.com/og-preview.webp">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="Arcade Vault">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://arcade.padmajp.com/Gemini_Generated_Image_l48d4ql48d4ql48d.webp">
+<meta name="twitter:image" content="https://arcade.padmajp.com/og-preview.webp">
 <meta name="twitter:title" content="Arcade Vault — Free Retro Browser Games">
 <meta name="twitter:description" content="10 free retro arcade games in your browser. No download, no login. Play now.">
 <meta name="twitter:creator" content="@padmajp">
@@ -385,6 +385,29 @@ footer {
 footer .heart { color: #ff3a6e; }
 footer .key   { color: rgba(0,220,255,0.6); border: 1px solid rgba(0,220,255,0.2); padding: 1px 5px; border-radius: 2px; font-size: 10px; }
 
+.bmc {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 16px;
+  padding: 9px 18px;
+  background: rgba(255,213,0,0.08);
+  border: 1px solid rgba(255,213,0,0.28);
+  border-radius: 6px;
+  color: #ffd500;
+  font-family: var(--pixel);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  transition: background 0.25s, box-shadow 0.25s, letter-spacing 0.25s;
+}
+.bmc:hover {
+  background: rgba(255,213,0,0.16);
+  box-shadow: 0 0 18px rgba(255,213,0,0.2);
+  letter-spacing: 0.26em;
+}
+.bmc-icon { font-size: 14px; line-height: 1; }
+
 /* ── LAUNCH OVERLAY ──────────────────────────────────────────────────────── */
 #launch {
   position: fixed;
@@ -517,6 +540,11 @@ footer .key   { color: rgba(0,220,255,0.6); border: 1px solid rgba(0,220,255,0.2
          style="color:rgba(0,220,255,0.7);text-decoration:none;border-bottom:1px solid rgba(0,220,255,0.25);padding-bottom:1px;transition:color 0.2s;"
          onmouseover="this.style.color='#0df'" onmouseout="this.style.color='rgba(0,220,255,0.7)'">padmaj</a>
       &nbsp;·&nbsp; 2026
+    </div>
+    <div>
+      <a href="https://buymeacoffee.com/padmaj" target="_blank" rel="noopener" class="bmc">
+        <span class="bmc-icon">☕</span> BUY ME A COFFEE
+      </a>
     </div>
   </footer>
 </div>
