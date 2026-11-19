@@ -24,6 +24,16 @@
 <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
 <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
 <link rel="manifest" href="/favicon/site.webmanifest">
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wy3ymrde09");
+</script>
+<script>/* fall back to in-memory storage when the browser blocks localStorage */
+try{localStorage.setItem('__av','1');localStorage.removeItem('__av');}catch(e){try{const m={};Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v);},removeItem:k=>{delete m[k];}}});}catch(_){}}
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -203,8 +213,8 @@ function chord(r,c){
     if(!safe&&!shieldActive){
       // Will explode — just reveal and let it trigger
     }
-    neighbors(r,c,(nr,nc)=>{if(!board[nr][nc].flagged&&!board[nr][nc].revealed)reveal(nr,nc);});
-    sfxChord();
+    neighbors(r,c,(nr,nc)=>{if(state==='playing'&&!board[nr][nc].flagged&&!board[nr][nc].revealed)reveal(nr,nc);});
+    sfxChord(); checkWin();
   }
 }
 
@@ -264,12 +274,14 @@ function usePwImmediate(type){
 }
 
 function checkWin(){
-  if(firstClick) return;
+  if(firstClick||state!=='playing') return;
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(!board[r][c].mine&&!board[r][c].revealed) return;
   win();
 }
 
 function triggerDead(mr,mc){
+  if(state!=='playing') return;
+  state='dying';
   sfxMine(); burst(GX+mc*CS+CS/2,GY+mr*CS+CS/2,'#ff2244',24,5);
   // Cascade-reveal all mines
   let delay=0;
@@ -280,20 +292,20 @@ function triggerDead(mr,mc){
       delay+=18;
     }
   }
-  setTimeout(()=>{ state='dead'; saveStats(); },900);
+  setTimeout(()=>{ if(state==='dying'){ state='dead'; saveStats(true); } },900);
 }
 
 function win(){
   const bonus=Math.floor(timeLeft/100)*level;
   score+=bonus; if(score>hiScore){hiScore=score;localStorage.setItem('ms_hi',hiScore);}
-  sfxWin(); state='win'; saveStats();
+  sfxWin(); state='win'; saveStats(level>=LEVELS.length);
 }
 
-function saveStats(){
+function saveStats(runOver){
   try{
     const av=JSON.parse(localStorage.getItem('arcade_stats')||'{}');
     if(!av['mine-sweep'])av['mine-sweep']={played:0,best:0};
-    av['mine-sweep'].played++; av['mine-sweep'].best=Math.max(av['mine-sweep'].best,score);
+    if(runOver) av['mine-sweep'].played++; av['mine-sweep'].best=Math.max(av['mine-sweep'].best,score);
     av['mine-sweep'].lastPlayed=Date.now();
     localStorage.setItem('arcade_stats',JSON.stringify(av));
   }catch(e){}
@@ -316,7 +328,7 @@ function cellAt(px,py){
 }
 function px2(e){
   const rect=canvas.getBoundingClientRect(), sx=CW/rect.width;
-  const src=e.touches?e.touches[0]:(e.changedTouches||[e])[0];
+  const src=(e.touches&&e.touches.length)?e.touches[0]:(e.changedTouches&&e.changedTouches.length)?e.changedTouches[0]:e;
   return{x:(src.clientX-rect.left)*sx, y:(src.clientY-rect.top)*sx};
 }
 
@@ -329,17 +341,14 @@ canvas.addEventListener('mousedown',e=>{
   if(cell) flag(cell.r,cell.c);
 });
 
-canvas.addEventListener('click',e=>{
-  initAudio();resumeAudio();
+canvas.addEventListener('click',e=>{initAudio();resumeAudio();handlePress(px2(e));});
+function handlePress({x,y}){
   if(state==='menu'){initGame(1);return;}
   if(state==='dead'){initGame(1);return;}
   if(state==='win'){
-    score=0;
     if(level<LEVELS.length)initGame(level+1); else initGame(1); return;
   }
   if(state!=='playing') return;
-  if(lastTouchLong){lastTouchLong=false;return;}
-  const {x,y}=px2(e);
   // Inventory slots
   const panY=GY+ROWS*CS+8;
   for(let i=0;i<2;i++){
@@ -354,7 +363,7 @@ canvas.addEventListener('click',e=>{
   if(flagMode){flag(r,c);}
   else if(board[r][c].revealed){chord(r,c);}
   else{reveal(r,c); checkWin();}
-});
+}
 
 // Long-press to flag on mobile
 canvas.addEventListener('touchstart',e=>{
@@ -365,7 +374,10 @@ canvas.addEventListener('touchstart',e=>{
   longTimer=setTimeout(()=>{flag(cell.r,cell.c);lastTouchLong=true;longTimer=null;},400);
 },{passive:false});
 canvas.addEventListener('touchend',e=>{
-  e.preventDefault();if(longTimer){clearTimeout(longTimer);longTimer=null;}
+  e.preventDefault();
+  if(longTimer){clearTimeout(longTimer);longTimer=null;}
+  if(lastTouchLong){lastTouchLong=false;return;}
+  handlePress(px2(e));
 },{passive:false});
 canvas.addEventListener('touchcancel',()=>{if(longTimer){clearTimeout(longTimer);longTimer=null;}});
 
@@ -376,7 +388,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='KeyF'){flagMode=!flagMode;return;}
   if(state==='playing'){if(e.code==='Digit1')usePw(0);if(e.code==='Digit2')usePw(1);}
   if((e.code==='Space'||e.code==='Enter')&&(state==='menu'||state==='dead')){e.preventDefault();initGame(1);}
-  if((e.code==='Space'||e.code==='Enter')&&state==='win'){e.preventDefault();score=0;if(level<LEVELS.length)initGame(level+1);else initGame(1);}
+  if((e.code==='Space'||e.code==='Enter')&&state==='win'){e.preventDefault();if(level<LEVELS.length)initGame(level+1);else initGame(1);}
 });
 
 function togglePause(){
@@ -657,6 +669,10 @@ function loop(ts){
   if(state==='paused'){drawPause();return;}
   drawBg();drawGrid();drawParticles();drawPopups();drawHUD();drawPanel();
 }
+// Auto-pause when the tab is hidden or the window loses focus (also releases held keys)
+function autoPause(){if(state==='playing')togglePause();}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)autoPause();});
+window.addEventListener('blur',autoPause);
 requestAnimationFrame(loop);
 </script>
 </body>

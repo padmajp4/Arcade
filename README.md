@@ -18,6 +18,7 @@ Live at **[arcade.padmajp.com](https://arcade.padmajp.com)**
 | [Pixel Chomp](pixel-chomp.html) | Arcade | Pac-Man style with 4 unique ghost AIs |
 | [Dino Dash](dino-dash.html) | Endless Runner | Jump cacti, duck pterodactyls, day/night cycle |
 | [Pixel Hop](pixel-hop.html) | Arcade | Frogger revival — cross roads and ride logs |
+| [Pixel Sudoku](pixel-sudoku.html) | Puzzle | Unique-solution Sudoku, 4 difficulties, notes, undo & hints |
 
 ## Tech
 

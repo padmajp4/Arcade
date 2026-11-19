@@ -24,6 +24,16 @@
 <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
 <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
 <link rel="manifest" href="/favicon/site.webmanifest">
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wy3ymrde09");
+</script>
+<script>/* fall back to in-memory storage when the browser blocks localStorage */
+try{localStorage.setItem('__av','1');localStorage.removeItem('__av');}catch(e){try{const m={};Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v);},removeItem:k=>{delete m[k];}}});}catch(_){}}
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -541,11 +551,14 @@ function drawPause(){
 }
 
 // ══ LOOP ══════════════════════════════════════════════════════════════
-let lastT=0;
+let lastT=0,acc=0;const FRAME_MS=1000/60;
 function loop(ts){
   requestAnimationFrame(loop);
-  if(ts-lastT<14)return; lastT=ts;
-  if(state==='playing')update();
+  acc+=Math.min(ts-lastT,100);lastT=ts;
+  if(acc<FRAME_MS)return;
+  // run game logic at a fixed 60 steps/sec regardless of display refresh rate
+  let n=0;while(acc>=FRAME_MS&&n<4){if(state==='playing')update();;acc-=FRAME_MS;n++;}
+  if(n===4)acc=0;
   C.clearRect(0,0,CW,CH);
   if(state==='menu')  {drawMenu();return;}
   if(state==='dead')  {drawDead();return;}
@@ -553,6 +566,10 @@ function loop(ts){
   f(0,0,CW,CH,cl('bg'));
   drawBg();drawGround();drawObstacles();drawParticles();drawDino();drawHUD();
 }
+// Auto-pause when the tab is hidden or the window loses focus (also releases held keys)
+function autoPause(){for(const k in K)K[k]=false;if(state==='playing')togglePause();}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)autoPause();});
+window.addEventListener('blur',autoPause);
 requestAnimationFrame(loop);
 </script>
 </body>
